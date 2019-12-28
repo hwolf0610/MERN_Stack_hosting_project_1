@@ -34,7 +34,7 @@ export default class SignIn extends React.Component {
     
   }
   componentDidMount = () => {
-    let body = { name: 'admin', birthday: '6/10/1996', address: 'dandong', phonenumber: '1993836374', email: 'golden198989@outlook.com', password: 'admin', flag: '1' }
+    let body = { name: 'admin', birthday: '6/10/1996', address: 'dandong', phonenumber: '1993836374', email: 'admin@outlook.com', password: 'admin', flag: '1' }
     axios.post(localStorage.getItem("url")+'/todos/start', body)
       .then((res) => {
         console.log(res.data)
