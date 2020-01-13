@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 let Plan = new Schema({
+    week: {
+        type: String
+    },
     month: {
         type: String
     },
@@ -14,6 +17,9 @@ let Plan = new Schema({
         type:String
     },
     price:{
+        type:String
+    },
+    flag:{
         type:String
     }
 });

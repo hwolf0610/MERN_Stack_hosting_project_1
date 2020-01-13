@@ -42,6 +42,39 @@ export default class SignIn extends React.Component {
       }).catch((error) => {
         console.log(error)
       });
+
+    //   let body = { month: this.state.month, day: this.state.day, year: this.state.year, name: this.state.name, clientname: this.state.clientname, price: this.state.price }
+    // axios.post(localStorage.getItem("url")+'/todos/working', body)
+    //   .then((res) => {
+    //     console.log(res.data)
+    //     alert("Successful!!");
+    //     window.location.reload();
+    //   }).catch((error) => {
+    //     console.log(error)
+    //   });
+
+
+
+      axios.post('/todos/showplan')
+      .then((res) => {
+        
+        if (res.data.length > 0)
+          this.setState({ dataList: res.data })        
+
+          let totalplan = 0;
+
+      this.state.dataList.map((item, index) => {
+        totalplan += item.price * 1.0;
+      
+      })
+      console.log("totalplan:",totalplan)
+      localStorage.setItem("totalplan", totalplan)
+
+      }).catch((error) => {
+        console.log(error)
+      });
+
+      
   }
 
   changeemail = (e) => { this.setState({ email: e.target.value }); }

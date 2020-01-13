@@ -31,7 +31,8 @@ import {
   KeyboardDatePicker,
 } from '@material-ui/pickers';
 
-export default class Dashboard extends React.Component {
+
+export default class WeekQuality extends React.Component {
   constructor(props) {
     super(props)
 
@@ -43,6 +44,8 @@ export default class Dashboard extends React.Component {
     this.state = {
       currentmonth: date,
       currentyear: year,
+      currentdate: null,
+      currentweek: null,
       data: {
         labels: [],
         datasets: [
@@ -125,6 +128,12 @@ export default class Dashboard extends React.Component {
     }
   }
   componentDidMount = () => {
+    var da = new Date()
+    let weekly = this.getNumberOfWeek(da) 
+    console.log("weekly:", weekly)
+    this.setState({ currentweek: weekly })
+
+    
     axios.post('/todos/show')
       .then((res) => {
         if (res.data.length > 0) {
@@ -163,25 +172,21 @@ export default class Dashboard extends React.Component {
         console.log(error)
       });
 
-
-
-
-
   }
   updateYearState = (e) => { this.setState({ currentyear: e.target.value }) }
   updateMonthState = (e) => { this.setState({ currentmonth: e.target.value }) }
   update_data_bar = () => {
-    let { currentmonth, currentyear, dataList, data, datalabel, dataprice, dataplan } = this.state
+    let { currentmonth, currentyear, currentweek, dataList, data, datalabel, dataprice, dataplan } = this.state
     let gainObject = {}
     let labels = []
     let bar1 = []
 
     datalabel.map(item => {
-      gainObject[item.name] = 0 * 1.0
+      gainObject[item.name] = 0 *1.0
     })
 
     dataList.map(item => {
-      if (item.month == currentmonth && item.year == currentyear ) {
+      if (item.month == currentmonth && item.year == currentyear && currentweek == item.week ) {
         if (gainObject[item.name]) {
           gainObject[item.name] += item.price * 1.0
         } else {
@@ -198,7 +203,6 @@ export default class Dashboard extends React.Component {
       bar1.push(gainObject[keys[index]])
     }
 
-    console.log("label and bar ", labels, bar1)
 
     data.labels = labels
     data.datasets[0].data = bar1
@@ -208,17 +212,12 @@ export default class Dashboard extends React.Component {
     this.setState({ data, datalabel, dataprice })
 
   }
-
-
-
   update_data_plan_bar = () => {
-    let { currentmonth, currentyear, dataplanlist, data, datalabel, dataprice, dataplan } = this.state
+    let { currentmonth, currentyear,currentweek, dataplanlist, data, datalabel, dataprice, dataplan } = this.state
     let gainObject = {}
     let bar2 = []
-
     dataplanlist.map(item => {
-
-      if (item.month == currentmonth && item.year == currentyear  && item.flag == "month") {
+      if (item.month == currentmonth && item.year == currentyear && currentweek == item.week && item.flag == "week" ) {
         if (gainObject[item.name]) {
           gainObject[item.name] += item.price * 1.0
         } else {
@@ -234,7 +233,7 @@ export default class Dashboard extends React.Component {
       bar2.push(gainObject[item.name]||0);
     });
 
-    console.log("plan gainObject ;", gainObject, dataplanlist, datalabel, bar2)
+    console.log("gainObject ;", gainObject)
     console.log("getObject values: ", gainObject["admin"]);
     /*
     let keys = Object.keys(gainObject);
@@ -255,15 +254,26 @@ export default class Dashboard extends React.Component {
   setSelectedDate = date => {
     this.setState({ selectedDate: date })
   }
-
+  getNumberOfWeek= date => {
+    const today = new Date(date);
+    const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+    const pastDaysOfYear = (today - firstDayOfYear) / 86400000;
+    return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+}
   handleDateChange = date => {
     this.setSelectedDate(date);
     console.log("data:", this.state.selectedDate)
     var d = new Date(date);
     var realdate = (d.getUTCMonth() + 1 * 1.0) + "/" + d.getUTCDate() + "/" + d.getUTCFullYear();
-    
+
     this.setState({ currentyear: d.getUTCFullYear() })
     this.setState({ currentmonth: d.getUTCMonth() + 1 * 1.0 })
+    this.setState({ currentdate: d.getUTCDate() })
+    let weekly = this.getNumberOfWeek(date) 
+    console.log("weekly:", weekly)
+
+    this.setState({ currentweek: weekly })
+    
 
     console.log("hours:", d.getUTCHours()); // Hours
     console.log("minutes:", d.getUTCMinutes());
@@ -289,7 +299,7 @@ export default class Dashboard extends React.Component {
               {/* <ArrowDropDownIcon /> */}
             </Button>
           }
-          title={localStorage.getItem('word18')}
+          title={localStorage.getItem('word16')}
         />
 
         <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -313,50 +323,7 @@ export default class Dashboard extends React.Component {
           </Grid>
 
         </MuiPickersUtilsProvider>
-
-
-        {/* <FormControl style={{ margin: '10px', minWidth: 120, }}>
-          <InputLabel id="demo-simple-select-label">Year</InputLabel>
-          <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            value={this.state.currentyear}
-            onChange={this.updateYearState}
-          >
-            {
-
-              this.state.showyear.map((item, index) => {
-                return (
-                  <MenuItem value={item}>{item}</MenuItem>
-                )
-              })}
-          </Select>
-          <FormHelperText>please select Year</FormHelperText>
-        </FormControl>
-
-        <FormControl style={{ margin: '10px', minWidth: 120, }}>
-          <InputLabel id="demo-simple-select-helper-label">Month</InputLabel>
-          <Select
-            labelId="demo-simple-select-helper-label"
-            id="demo-simple-select-helper"
-            value={this.state.currentmonth}
-            onChange={this.updateMonthState}
-          >
-            {
-
-              this.state.showmonth.map((item, index) => {
-                return (
-                  <MenuItem value={item}>{item}</MenuItem>
-                )
-              })}
-
-          </Select>
-          <FormHelperText>please select month</FormHelperText>
-        </FormControl> 
-         <Button onClick={this.update_data_bar} style={{ backgroundColor: 'green', color: 'white', border: '1px solid #e7e9eb' }}>Change</Button>        
-        */}
-
-
+ 
 
 
         <Divider />
@@ -373,64 +340,3 @@ export default class Dashboard extends React.Component {
     );
   }
 }
-
-// const useStyles = makeStyles(() => ({
-//   root: {},
-//   chartContainer: {
-//     height: 400,
-//     position: 'relative'
-//   },
-//   actions: {
-//     justifyContent: 'flex-end'
-//   }
-// }));
-
-// const LatestSales = props => {
-//   const { className, ...rest } = props;
-
-//   const classes = useStyles();
-
-//   return (
-//     <Card
-//       {...rest}
-//       className={clsx(classes.root, className)}
-//     >
-//       <CardHeader
-//         action={
-//           <Button
-//             size="small"
-//             variant="text"
-//           >
-//             Last 7 days <ArrowDropDownIcon />
-//           </Button>
-//         }
-//         title="Latest Sales"
-//       />
-//       <Divider />
-//       <CardContent>
-//         <div className={classes.chartContainer}>
-//           <Bar
-//             data={data}
-//             options={options}
-//           />
-//         </div>
-//       </CardContent>
-//       <Divider />
-//       {/* <CardActions className={classes.actions}>
-//         <Button
-//           color="primary"
-//           size="small"
-//           variant="text"
-//         >
-//           Overview <ArrowRightIcon />
-//         </Button>
-//       </CardActions> */}
-//     </Card>
-//   );
-// };
-
-// LatestSales.propTypes = {
-//   className: PropTypes.string
-// };
-
-// export default LatestSales;

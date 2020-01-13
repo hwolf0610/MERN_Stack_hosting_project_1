@@ -1,10 +1,12 @@
 import React, { Fragment } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import {  CardActions,
+import {
+  CardActions,
   Divider,
   Grid,
   Button,
-  TextField, Typography as MuiTypography } from '@material-ui/core';
+  TextField, Typography as MuiTypography
+} from '@material-ui/core';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -19,6 +21,14 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 import Pagination from "material-ui-flat-pagination";
 import axios from "axios";
+
+import DateFnsUtils from '@date-io/date-fns';
+import {
+  MuiPickersUtilsProvider,
+  KeyboardTimePicker,
+  KeyboardDatePicker,
+} from '@material-ui/pickers';
+
 const theme = createMuiTheme();
 
 
@@ -35,18 +45,28 @@ export default class Typography extends React.Component {
     this.state = {
       date: year + "-" + date + "-" + days,
       month: '',
+      flag: '',
+      week:'',
       year: '',
       name: '',
       detail: '',
       price: '',
       dataList: [],
       dataname: [],
+      showkind:['month','week'],
       offset: 0,
+      buttontext: localStorage.getItem("word12"),
+      pagercounter: 0,
+      userid: '',
+      selectedDate: new Date(),
+
     }
 
     if (localStorage.getItem("key") == 0 || localStorage.getItem("key") == 1) {
       window.location.href = "/sign-in";
-  } else {  }
+    } else {
+
+    }
 
   }
   componentDidMount = () => {
@@ -54,11 +74,19 @@ export default class Typography extends React.Component {
       .then((res) => {
         if (res.data.length > 0)
           this.setState({ dataList: res.data })
+
+        let counter = res.data.length;
+        if (counter < 10) {
+          this.setState({ pagercounter: 1 })
+        } else {
+          this.setState({ pagercounter: counter / 10 })
+        }
+
       }).catch((error) => {
         console.log(error)
       });
 
-      axios.post('/todos/show')
+    axios.post('/todos/show')
       .then((res) => {
         let { dataname } = this.state
         if (res.data.length > 0)
@@ -71,7 +99,7 @@ export default class Typography extends React.Component {
 
   }
 
-  
+
   handleClick(offset) {
     this.setState({ offset });
     console.log("offset:", offset)
@@ -89,9 +117,10 @@ export default class Typography extends React.Component {
   }
 
   onSignup = () => {
-    // if (this.state.password === this.state.confirm) {
-      let body = { month: this.state.month, year: this.state.year, name: this.state.name, detail: this.state.detail, price: this.state.price, flag: "2" }
-      axios.post(localStorage.getItem("url")+'/todos/planadd', body)
+    if (this.state.buttontext == localStorage.getItem("word12")) {
+      // if (this.state.password === this.state.confirm) {
+      let body = {  week: this.state.week,month: this.state.month, year: this.state.year, name: this.state.name, detail: this.state.detail, price: this.state.price, flag: this.state.flag }
+      axios.post(localStorage.getItem("url") + '/todos/planadd', body)
         .then((res) => {
           console.log(res.data)
           alert("Successful!!");
@@ -99,20 +128,53 @@ export default class Typography extends React.Component {
         }).catch((error) => {
           console.log(error)
         });
-   
 
-    this.setState({
-      month: '',
-      year: '',
-      name: '',
-      detail: '',
-      price: '',
-    })
+
+      this.setState({
+        month: '',
+        year: '',
+        name: '',
+        detail: '',
+        price: '',
+      })
+    } else {
+      let id = this.state.userid
+      let body = {  week: this.state.week,month: this.state.month, year: this.state.year, name: this.state.name, detail: this.state.detail, price: this.state.price, flag: this.state.flag }
+      console.log("body:", body)
+      axios.post(localStorage.getItem("url") + '/todos/planupdate/' + id, body)
+        .then((res) => {
+          console.log(res.data)
+          alert("Successful!!");
+          window.location.reload();
+        }).catch((error) => {
+          console.log(error)
+        });
+    }
+
+    axios.post('/todos/showplan')
+      .then((res) => {
+
+        if (res.data.length > 0)
+          this.setState({ dataList: res.data })
+
+        let totalplan = 0;
+
+        this.state.dataList.map((item, index) => {
+          totalplan += item.price * 1.0;
+
+        })
+        console.log("totalplan:", totalplan)
+        localStorage.setItem("totalplan", totalplan)
+
+      }).catch((error) => {
+        console.log(error)
+      });
+
   }
   delete = (data) => {
     alert("item clicked : " + data)
     let id = data
-    axios.delete(localStorage.getItem("url")+'/todos/plandelete/' + id)
+    axios.delete(localStorage.getItem("url") + '/todos/plandelete/' + id)
       .then((res) => {
         console.log(res.data)
         alert("Successful_del!!");
@@ -122,11 +184,12 @@ export default class Typography extends React.Component {
       });
   }
   updatename = (e) => {
-    console.log("update name : ", e)
+    // console.log("update name : ", e)
     this.setState({ name: e })
 
   }
   updatedetail = (e) => { this.setState({ detail: e.target.value }) }
+  updateflag = (e) => { this.setState({ flag: e }) }
   updateprice = (e) => { this.setState({ price: e.target.value }) }
   setdate = (e) => {
     this.setState({ date: e.target.value })
@@ -139,10 +202,64 @@ export default class Typography extends React.Component {
     console.log("date:", this.state.date)
   }
 
-  render(){
-    return(
-      <div style={{padding:'20px'}}>
-         <Grid
+  setSelectedDate = date => {
+    this.setState({ selectedDate: date })
+  }
+  updateitem = (dataid,dataweek,dataflag, datamonth, datayear, dataname, datadetail, dataprice) => {
+    this.setState({ month: datamonth })
+    this.setState({ flag: dataflag })
+    this.setState({ week: dataweek })
+    this.setState({ year: datayear })
+    this.setState({ name: dataname })
+    this.setState({ detail: datadetail })
+    this.setState({ price: dataprice })
+    this.setState({ buttontext: localStorage.getItem("word13") })
+    this.setState({ userid: dataid })
+
+    this.setState({ selectedDate:  datamonth + "/"+"30/"+ datayear}) 
+    
+
+    // alert("item clicked : " + data)
+    // let id = data
+    // axios.delete(localStorage.getItem("url")+'/todos/userdelete/' + id)
+    //   .then((res) => {
+    //     console.log(res.data)
+    //     alert("Successful_del!!");
+    //     window.location.reload();
+    //   }).catch((error) => {
+    //     console.log(error)
+    //   });
+  }
+  getNumberOfWeek= date => {
+    const today = new Date(date);
+    const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+    const pastDaysOfYear = (today - firstDayOfYear) / 86400000;
+    return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+}
+  handleDateChange = date => {
+    this.setSelectedDate(date);
+    console.log("data:", this.state.selectedDate)
+    var d = new Date(date);
+    var realdate = (d.getUTCMonth() + 1 * 1.0) + "/" + d.getUTCDate() + "/" + d.getUTCFullYear();
+    this.setState({ date: realdate })
+    this.setState({ month: d.getUTCMonth() + 1 * 1.0 })
+    this.setState({ year: d.getUTCFullYear() })
+    
+    // alert(this.state.data)
+
+    let weekly = this.getNumberOfWeek(date) 
+    console.log("weekly:", weekly)
+
+    this.setState({ week: weekly })
+
+
+
+  };
+
+  render() {
+    return (
+      <div style={{ padding: '20px' }}>
+        <Grid
           container
           spacing={3}
         >
@@ -151,7 +268,30 @@ export default class Typography extends React.Component {
             md={4}
             xs={12}
           >
-            <TextField
+
+            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+
+              <Grid container justify="space-around">
+
+                <KeyboardDatePicker
+                  disableToolbar
+                  variant="inline"
+                  format="MM/dd/yyyy"
+                  margin="normal"
+                  id="date-picker-inline"
+                  label="Please select date"
+                  value={this.state.selectedDate}
+                  onChange={this.handleDateChange}
+                  KeyboardButtonProps={{
+                    'aria-label': 'change date',
+                  }}
+                />
+
+              </Grid>
+
+            </MuiPickersUtilsProvider>
+
+            {/* <TextField
               id="date"
               label="Date"
               type="date"
@@ -160,16 +300,23 @@ export default class Typography extends React.Component {
               // className={classes.textField}
               InputLabelProps={{
                 shrink: true,
-              }} 
-            />
+              }}
+            /> */}
           </Grid>
           <Grid
             item
-            md={4}
+            md={1}
+            xs={12}
+          >
+            <SingleSelect value={this.state.flag} placeholder="Select a kind" options={this.state.showkind} onChange={this.updateflag} />             
+          </Grid>
+          <Grid
+            item
+            md={3}
             xs={12}
           >
             <SingleSelect value={this.state.name} placeholder="Select a name" options={this.state.showname} onChange={this.updatename} />
-            
+
             {/* <TextField
               fullWidth
               label="Name"
@@ -197,7 +344,7 @@ export default class Typography extends React.Component {
               required
               value={this.state.price}
               variant="outlined"
-              helperText="Please input confirm"
+              helperText="Please input price"
             />
 
           </Grid>
@@ -217,8 +364,8 @@ export default class Typography extends React.Component {
               variant="outlined"
             />
           </Grid>
-          
-           
+
+
 
 
         </Grid>
@@ -229,7 +376,7 @@ export default class Typography extends React.Component {
             variant="contained"
             onClick={this.onSignup}
           >
-            ADD User
+            {this.state.buttontext}
           </Button>
         </CardActions>
         <Table
@@ -244,6 +391,12 @@ export default class Typography extends React.Component {
               <TableCell padding="checkbox">
                 <span>No</span>
               </TableCell>
+              <TableCell padding="checkbox">
+                <span>kind</span>
+              </TableCell>
+              <TableCell padding="checkbox">
+                <span>week</span>
+              </TableCell>              
               <TableCell padding="checkbox">
                 <span>Month</span>
               </TableCell>
@@ -271,40 +424,54 @@ export default class Typography extends React.Component {
               this.state.dataList.map((item, index) => {
                 let start = this.state.offset * 10 - 1
                 let end = this.state.offset * 10 + 10
+
                 while (start < index && index < end) {
-                return (
-                  <TableRow
-                    hover
-                    tabIndex={-1}
-                    key={index}
-                  >
-                    <TableCell padding="checkbox">
-                      <span>{index + 1}</span>
-                    </TableCell>
-                    <TableCell padding="checkbox">
-                      <span>{item.month}</span>
-                    </TableCell>
-                    <TableCell padding="checkbox">
-                      <span>{item.year}</span>
-                    </TableCell>
-                    <TableCell padding="checkbox">
-                      <span>{item.name}</span>
-                    </TableCell>
-                    <TableCell padding="checkbox">
-                      <span>{item.detail}</span>
-                    </TableCell>
-                    <TableCell padding="checkbox">
-                      <span>{item.price}</span>
-                    </TableCell>
-                    <TableCell padding="checkbox">
-                      <Button
-                        onClick={this.delete.bind(this, item._id)}
-                      >Delete
+
+
+                  return (
+                    <TableRow
+                      hover
+                      tabIndex={-1}
+                      key={index}
+                      onClick={this.updateitem.bind(this, item._id, item.week,item.flag, item.month, item.year, item.name, item.detail, item.price)}
+                    >
+                      <TableCell padding="checkbox">
+                        <span>{index + 1}</span>
+                      </TableCell>
+                      <TableCell padding="checkbox">
+                        <span>{item.flag}</span>
+                      </TableCell>
+                      <TableCell padding="checkbox">
+                        <span>{item.week}</span>
+                      </TableCell>                     
+                      <TableCell padding="checkbox">
+                        <span>{item.month}</span>
+                      </TableCell>
+                      <TableCell padding="checkbox">
+                        <span>{item.year}</span>
+                      </TableCell>
+                      <TableCell padding="checkbox">
+                        <span>{item.name}</span>
+                      </TableCell>
+                      <TableCell padding="checkbox">
+                        <span>{item.detail}</span>
+                      </TableCell>
+                      <TableCell padding="checkbox">
+                        <span>{item.price}</span>
+                      </TableCell>
+                      <TableCell padding="checkbox">
+                        <Button
+                          onClick={this.delete.bind(this, item._id)}
+                        >Delete
                                                         </Button>
-                    </TableCell>
-                  </TableRow>
-                )}
+                      </TableCell>
+                    </TableRow>
+                  )
+                }
+
               })
+
+
             }
 
           </TableBody>
@@ -314,7 +481,7 @@ export default class Typography extends React.Component {
           <Pagination
             limit={1}
             offset={this.state.offset}
-            total={100}
+            total={this.state.pagercounter}
             onClick={(e, offset) => this.handleClick(offset)}
           />
         </MuiThemeProvider>

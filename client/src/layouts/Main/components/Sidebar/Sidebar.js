@@ -51,26 +51,27 @@ const Sidebar = props => {
       icon: <DashboardIcon />
     },
     {
-      title: 'Users',
+      title: localStorage.getItem("word5"),
       href: '/users',
       role:['2'],
       icon: <PeopleIcon />
     },
     {
-      title: 'Quanlity',
+      title: localStorage.getItem("word6"),
       href: '/products',
       role:['2'],
       icon: <ShoppingBasketIcon />
     },{
-        title: 'Plan',
+        title: localStorage.getItem("word7"),
         href: '/typography',
         role:['2'],
         icon: <TextFieldsIcon />
-      }
+      },
     // {
-    //   title: 'Authentication',
-    //   href: '/sign-in',
-    //   icon: <LockOpenIcon />
+    //   title: localStorage.getItem("word15"),
+    //   href: '/icons',
+    //   role:['1'],
+    //   icon: <ImageIcon />
     // },
     // {
     //   title: 'Typography',

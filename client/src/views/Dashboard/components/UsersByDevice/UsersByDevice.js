@@ -1,6 +1,8 @@
 import React from 'react';
-import { CardContent,TextField,Grid,
-  Button} from '@material-ui/core';
+import {
+  CardContent, TextField, Grid,
+  Button
+} from '@material-ui/core';
 import axios from "axios";
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -12,6 +14,9 @@ import ReactDOM from "react-dom";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 import Pagination from "material-ui-flat-pagination";
+
+import Calendar from 'react-calendar';
+
 const theme = createMuiTheme();
 
 export default class ProductCard extends React.Component {
@@ -25,6 +30,9 @@ export default class ProductCard extends React.Component {
       year: '',
       price: '',
       detail: '',
+      pagercounter: 0,
+      date: new Date(),
+
     }
   }
 
@@ -34,8 +42,16 @@ export default class ProductCard extends React.Component {
         let { dataList } = this.state
         if (res.data.length > 0)
           // if(res.data.name==localStorage.getItem("name"))
-              dataList = res.data   
-              console.log("datalist:", dataList)      
+          dataList = res.data
+        console.log("datalist:", dataList)
+
+        let counter = res.data.length;
+        if (counter < 10) {
+          this.setState({ pagercounter: 1 })
+        } else {
+          this.setState({ pagercounter: counter / 10 })
+        }
+
         this.setState({ dataList })
         // this.update_pager() 
       }).catch((error) => {
@@ -44,16 +60,16 @@ export default class ProductCard extends React.Component {
 
   }
   onSignup = () => {
-      let body = { name: localStorage.getItem("name"), month: this.state.month, year: this.state.year, detail: this.state.detail, price: this.state.price}
-         
-      axios.post(localStorage.getItem("url")+'/todos/addplan', body)
-        .then((res) => {
-          console.log(res.data)
-          alert("Successful!!");
-          window.location.reload();
-        }).catch((error) => {
-          console.log(error)
-        });   
+    let body = { name: localStorage.getItem("name"), month: this.state.month, year: this.state.year, detail: this.state.detail, price: this.state.price }
+
+    axios.post(localStorage.getItem("url") + '/todos/addplan', body)
+      .then((res) => {
+        console.log(res.data)
+        alert("Successful!!");
+        window.location.reload();
+      }).catch((error) => {
+        console.log(error)
+      });
     this.setState({
       name: '',
       month: '',
@@ -79,11 +95,21 @@ export default class ProductCard extends React.Component {
     this.setState({ offset });
     console.log("offset:", offset)
   }
+
+  onChange = date => {
+    this.setState({ date })
+    alert(date)
+  }
+
   render() {
     return (
       <div>
-        <CardContent style={{ fontSize:'15px', height:'600px', backgroundColor: 'white', border: '1px solid #e7e9eb' }}>
-          Personal Quanlity
+        <CardContent style={{ fontSize: '15px', height: '600px', backgroundColor: 'white', border: '1px solid #e7e9eb' }}>
+          {/* <Calendar
+            onChange={this.onChange}
+            value={this.state.date}
+          /> */}
+          {localStorage.getItem("word17")}
            <Table
             // className={classes.table}
             aria-labelledby="tableTitle"
@@ -151,16 +177,17 @@ export default class ProductCard extends React.Component {
           </Table>
 
           <MuiThemeProvider theme={theme}>
-          <CssBaseline />
-          <Pagination
-            limit={1}
-            offset={this.state.offset}
-            total={100}
-            onClick={(e, offset) => this.handleClick(offset)}
-          />
-        </MuiThemeProvider>
-       
-        {/* <Grid
+            <CssBaseline />
+            <Pagination
+              limit={1}
+              offset={this.state.offset}
+              total={this.state.pagercounter}
+
+              onClick={(e, offset) => this.handleClick(offset)}
+            />
+          </MuiThemeProvider>
+
+          {/* <Grid
           container
           spacing={3}
         >
@@ -239,9 +266,9 @@ export default class ProductCard extends React.Component {
           </Grid>
         </Grid>
          */}
-         
-       
-        
+
+
+
         </CardContent>
       </div>
     );

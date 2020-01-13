@@ -1,29 +1,27 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/styles';
 
-const useStyles = makeStyles(theme => ({
-  root: {
-    padding: theme.spacing(4)
-  },
-  iframe: {
-    width: '100%',
-    minHeight: 640,
-    border: 0
+export default class Icons extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      currentdata: 0,
+      dataList: [],
+      date: new Date(),
+    }
+    if (localStorage.getItem("key") == 0 ) {
+          window.location.href = "/sign-in";
+      } 
+
   }
-}));
 
-const Icons = () => {
-  const classes = useStyles();
 
-  return (
-    <div className={classes.root}>
-      <iframe
-        className={classes.iframe}
-        src="https://material.io/tools/icons/?icon=accessibility&style=outline"
-        title="Material Design icons"
-      />
-    </div>
-  );
-};
+  render() {
+    return (
+      <div>
+        <h1>hjh</h1>
+      </div>
 
-export default Icons;
+
+    );
+  }
+}

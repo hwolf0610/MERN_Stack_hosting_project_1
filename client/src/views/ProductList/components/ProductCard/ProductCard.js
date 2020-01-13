@@ -22,8 +22,15 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 import Pagination from "material-ui-flat-pagination";
 
+import DateFnsUtils from '@date-io/date-fns';
+import {
+  MuiPickersUtilsProvider,
+  KeyboardTimePicker,
+  KeyboardDatePicker,
+} from '@material-ui/pickers';
+
 const theme = createMuiTheme();
- 
+
 export default class ProductCard extends React.Component {
   constructor(props) {
     super(props)
@@ -39,6 +46,7 @@ export default class ProductCard extends React.Component {
       date: year + "-" + date + "-" + days,
       day: '',
       month: '',
+      week: '',
       year: '',
       name: '',
       clientname: '',
@@ -48,7 +56,9 @@ export default class ProductCard extends React.Component {
       showname: [],
       startDate: new Date(),
       offset: 0,
-     
+      pagercounter: 0,
+      selectedDate: new Date(),
+
     }
     if (localStorage.getItem("key") == 0 || localStorage.getItem("key") == 1) {
       window.location.href = "/sign-in";
@@ -73,6 +83,14 @@ export default class ProductCard extends React.Component {
         if (res.data.length > 0)
           dataList = res.data
         this.setState({ dataList })
+
+        let counter = res.data.length;
+        if (counter < 10) {
+          this.setState({ pagercounter: 1 })
+        } else {
+          this.setState({ pagercounter: counter / 10 })
+        }
+
         // this.update_pager() 
       }).catch((error) => {
         console.log(error)
@@ -133,8 +151,8 @@ export default class ProductCard extends React.Component {
 
   updateprice = (e) => { this.setState({ price: e.target.value }) }
   onAddjob = () => {
-    let body = { month: this.state.month, day: this.state.day, year: this.state.year, name: this.state.name, clientname: this.state.clientname, price: this.state.price }
-    axios.post(localStorage.getItem("url")+'/todos/working', body)
+    let body = { month: this.state.month, week: this.state.week, day: this.state.day, year: this.state.year, name: this.state.name, clientname: this.state.clientname, price: this.state.price }
+    axios.post(localStorage.getItem("url") + '/todos/working', body)
       .then((res) => {
         console.log(res.data)
         alert("Successful!!");
@@ -147,7 +165,7 @@ export default class ProductCard extends React.Component {
   delete = (data) => {
     alert("item clicked : " + data)
     let id = data
-    axios.delete(localStorage.getItem("url")+'/todos/workdelete/' + id)
+    axios.delete(localStorage.getItem("url") + '/todos/workdelete/' + id)
       .then((res) => {
         console.log(res.data)
         alert("Successful_del!!");
@@ -168,7 +186,37 @@ export default class ProductCard extends React.Component {
   }
   setname = (e) => {
     this.setState({ name: e.target.value })
-  } 
+  }
+
+  setSelectedDate = date => {
+    this.setState({ selectedDate: date })
+  }
+
+  getNumberOfWeek= date => {
+    const today = new Date(date);
+    const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+    const pastDaysOfYear = (today - firstDayOfYear) / 86400000;
+    return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+}
+
+  handleDateChange = date => {
+    this.setSelectedDate(date);
+    console.log("data:", this.state.selectedDate)
+    var d = new Date(date);
+    var realdate = (d.getUTCMonth() + 1 * 1.0) + "/" + d.getUTCDate() + "/" + d.getUTCFullYear();
+    this.setState({ date: realdate })
+    this.setState({ day:  d.getUTCDate() })
+    this.setState({ month: d.getUTCMonth() + 1 * 1.0  })
+    this.setState({ year: d.getUTCFullYear()  })
+    // alert(this.state.data)
+    let weekly = this.getNumberOfWeek(date) 
+    console.log("weekly:", weekly)
+
+    this.setState({ week: weekly })
+ 
+
+  };
+
   render() {
     return (
       <div >
@@ -181,7 +229,29 @@ export default class ProductCard extends React.Component {
             md={4}
             xs={12}
           >
-            <TextField
+
+            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+
+              <Grid container justify="space-around">
+
+                <KeyboardDatePicker
+                  disableToolbar
+                  variant="inline"
+                  format="MM/dd/yyyy"
+                  margin="normal"
+                  id="date-picker-inline"
+                  label="Please select date"
+                  value={this.state.selectedDate}
+                  onChange={this.handleDateChange}
+                  KeyboardButtonProps={{
+                    'aria-label': 'change date',
+                  }}
+                />
+
+              </Grid>
+
+            </MuiPickersUtilsProvider>
+            {/* <TextField
               fullWidth
               helperText="Please specify the first name"
               label="date"
@@ -203,7 +273,8 @@ export default class ProductCard extends React.Component {
               InputLabelProps={{
                 shrink: true,
               }}
-            />
+            /> */}
+
 
 
             {/* <KeyboardDatePicker
@@ -231,7 +302,7 @@ export default class ProductCard extends React.Component {
               onChange={this.handleChange}
             /> */}
           </Grid>
-          
+
           <Grid
             item
             md={4}
@@ -269,7 +340,7 @@ export default class ProductCard extends React.Component {
             item
             md={12}
             xs={12}
-          > 
+          >
             {/* <TextField
               fullWidth
               label="Name"
@@ -292,7 +363,7 @@ export default class ProductCard extends React.Component {
             variant="contained"
             onClick={this.onAddjob}
           >
-            ADD Quanlity
+            {localStorage.getItem("word10")}
           </Button>
         </CardActions>
         <Table
@@ -309,6 +380,9 @@ export default class ProductCard extends React.Component {
               </TableCell>
               <TableCell padding="checkbox">
                 <span>Month</span>
+              </TableCell>
+              <TableCell padding="checkbox">
+                <span>Week</span>
               </TableCell>
               <TableCell padding="checkbox">
                 <span>Day</span>
@@ -337,48 +411,51 @@ export default class ProductCard extends React.Component {
           <TableBody>
             {
               //  this.updatetable
-               this.state.dataList.map((item, index) => {
+              this.state.dataList.map((item, index) => {
                 let start = this.state.offset * 10 - 1
                 let end = this.state.offset * 10 + 10
                 while (start < index && index < end) {
                   return (
                     <TableRow
-                    hover
-                    tabIndex={-1}
-                    key={index}
-                  >
-                    <TableCell padding="checkbox">
-                      <span>{index + 1}</span>
-                    </TableCell>
-                    <TableCell padding="checkbox">
-                      <span>{item.month}</span>
-                    </TableCell>
-                    <TableCell padding="checkbox">
-                      <span>{item.day}</span>
-                    </TableCell>
-                    <TableCell padding="checkbox">
-                      <span>{item.year}</span>
-                    </TableCell>
-                    <TableCell padding="checkbox">
-                      <span>{item.name}</span>
-                    </TableCell>
-                    <TableCell padding="checkbox">
-                      <span>{item.clientname}</span>
-                    </TableCell>
-                    <TableCell padding="checkbox">
-                      <span>{item.price}</span>
-                    </TableCell>
-                    <TableCell padding="checkbox">
-                      <Button
-                        onClick={this.delete.bind(this, item._id)}
-                      >Delete  </Button>
-                    </TableCell>
-                  </TableRow>
+                      hover
+                      tabIndex={-1}
+                      key={index}
+                    >
+                      <TableCell padding="checkbox">
+                        <span>{index + 1}</span>
+                      </TableCell>
+                      <TableCell padding="checkbox">
+                        <span>{item.month}</span>
+                      </TableCell>
+                      <TableCell padding="checkbox">
+                        <span>{item.week}</span>
+                      </TableCell>
+                      <TableCell padding="checkbox">
+                        <span>{item.day}</span>
+                      </TableCell>
+                      <TableCell padding="checkbox">
+                        <span>{item.year}</span>
+                      </TableCell>
+                      <TableCell padding="checkbox">
+                        <span>{item.name}</span>
+                      </TableCell>
+                      <TableCell padding="checkbox">
+                        <span>{item.clientname}</span>
+                      </TableCell>
+                      <TableCell padding="checkbox">
+                        <span>{item.price}</span>
+                      </TableCell>
+                      <TableCell padding="checkbox">
+                        <Button
+                          onClick={this.delete.bind(this, item._id)}
+                        >Delete  </Button>
+                      </TableCell>
+                    </TableRow>
                   )
                 }
-          
+
               })
-              
+
             }
 
           </TableBody>
@@ -389,7 +466,7 @@ export default class ProductCard extends React.Component {
           <Pagination
             limit={1}
             offset={this.state.offset}
-            total={100}
+            total={this.state.pagercounter}
             onClick={(e, offset) => this.handleClick(offset)}
           />
         </MuiThemeProvider>

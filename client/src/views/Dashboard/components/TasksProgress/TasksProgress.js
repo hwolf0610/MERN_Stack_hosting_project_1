@@ -23,6 +23,8 @@ export default class TasksProgress extends React.Component {
   }
   componentDidMount = () => {
 
+
+
     axios.post('/todos/getJobchart')
       .then((res) => {
 
@@ -30,26 +32,39 @@ export default class TasksProgress extends React.Component {
 
         if (res.data.length > 0) {
           dataList = res.data
-          this.setState({ dataList })
-          this.update_data_bar()
+
+          dataList.map(item => {
+            currentdata += item.price * 1.0
+      
+          })
+          currentdata = (currentdata/ localStorage.getItem("totalplan")) *100
+          currentdata = currentdata.toString().substr(0, 6); 
+          this.setState({ dataList,currentdata })
+
+
+          // this.update_data_bar()
         }
         console.log("array list : ", dataList)
       }).catch((error) => {
         console.log(error)
       });
   }
-  update_data_bar = () => {
-    let { currentmonth, currentyear, dataList, currentdata } = this.state
-    let barData1 = []
-    dataList.map(item => {
-      currentdata += item.price * 1.0
 
-    })
-    currentdata = (currentdata/ 30000) *100
-    currentdata = currentdata.toString().substr(0, 6);    
-    this.setState({ currentdata })
 
-  }
+  // update_data_bar = () => {
+  //   let { currentmonth, currentyear, dataList, currentdata } = this.state
+  //   let barData1 = []
+  //   dataList.map(item => {
+  //     currentdata += item.price * 1.0
+
+  //   })
+  //   currentdata = (currentdata/ 30000) *100
+  //   currentdata = currentdata.toString().substr(0, 6);    
+  //   this.setState({ currentdata })
+
+  // }
+
+
   render() {
     return (
       <div>
@@ -65,7 +80,7 @@ export default class TasksProgress extends React.Component {
                 gutterBottom
                 variant="body2"
               >
-                TASKS PROGRESS
+                {localStorage.getItem("word3") }
             </Typography>
               <Typography variant="h3">{this.state.currentdata} %</Typography>
             </Grid>

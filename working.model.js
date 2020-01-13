@@ -4,6 +4,9 @@ let Job = new Schema({
     month: {
         type: String
     },
+    week: {
+        type: String
+    },
     day: {
         type: String
     },

@@ -1,4 +1,6 @@
 import React from 'react';
+import axios from "axios";
+
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/styles';
@@ -52,13 +54,14 @@ const TotalProfit = props => {
               gutterBottom
               variant="body2"
             >
-              OUR TOTAL PlAN
+               {localStorage.getItem("word4") }  
             </Typography>
             <Typography
               color="inherit"
               variant="h3"
             >
-              $30,000
+              {/* $30,000 */}
+            {Math.round(localStorage.getItem("totalplan"))}
             </Typography>
           </Grid>
           <Grid item>

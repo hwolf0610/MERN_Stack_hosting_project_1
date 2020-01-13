@@ -58,7 +58,7 @@ export default class Budget extends React.Component {
                 gutterBottom
                 variant="body2"
               >
-                BUDGET
+                 {localStorage.getItem("word1") }   
             </Typography>
               
               
@@ -83,7 +83,7 @@ export default class Budget extends React.Component {
               // className={classes.caption}
               variant="caption"
             >
-                current month
+              {localStorage.getItem("word14")}
           </Typography>
           </div>
         </CardContent>

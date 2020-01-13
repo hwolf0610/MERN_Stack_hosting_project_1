@@ -342,6 +342,28 @@ todoRoutes.route('/userupdate/:id').post(function (req, res) {
     //   User.findByIdAndUpdate(id, req.body);
 });
 
+todoRoutes.route('/planupdate/:id').post(function (req, res) {
+    let id = req.url.split('/')[2]
+    console.log("req :", id)
+    
+    Plan.findById(id, function (err, doc) {
+        if (err)console.log("err ; ", err)
+        // doc.name = 'jason bourne';
+        console.log("doc : ", doc)
+        doc.month = req.body.month;
+        doc.week = req.body.week;
+        doc.flag = req.body.flag;
+        doc.year = req.body.year ;
+        doc.name = req.body.name;
+        doc.detail = req.body.detail ;
+        doc.price = req.body.price;
+        doc.save(()=>{
+            res.send("sccesss")
+        });
+      });
+    //   User.findByIdAndUpdate(id, req.body);
+});
+
 todoRoutes.route('/plandelete/:id').delete(
     function (req, res) {
         let id = req.params.id;

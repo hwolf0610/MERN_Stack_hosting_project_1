@@ -27,19 +27,40 @@ export default class TotalUsers extends React.Component {
     }).catch((error) => {
       console.log(error)
     });
+
+    axios.post('/todos/show')
+    .then((res) => {
+      let {dataList,currentdata } = this.state
+      if (res.data.length > 0)
+      dataList = res.data
+     
+
+      dataList.map(item => {
+        currentdata += 1.0
+  
+      })
+      this.setState({ dataList,currentdata })
+      // this.update_data_bar()
+    }).catch((error) => {
+      console.log(error)
+    });
+
     
   }
-  update_data_bar = () => {
-    let { currentmonth, currentyear, dataList, currentdata } = this.state
-    let barData1 = []
-    dataList.map(item => {
-      currentdata += 1.0
+  
+  // update_data_bar = () => {
+  //   let { currentmonth, currentyear, dataList, currentdata } = this.state
+  //   let barData1 = []
+  //   dataList.map(item => {
+  //     currentdata += 1.0
 
-    })
+  //   })
 
-    this.setState({ currentdata })
+  //   this.setState({ currentdata })
 
-  }
+  // }
+
+
   render() {
     return (
       <div>
@@ -55,7 +76,7 @@ export default class TotalUsers extends React.Component {
                 gutterBottom
                 variant="body2"
               >
-                TOTAL USERS
+                 {localStorage.getItem("word2") } 
             </Typography>
               <Typography variant="h3">{this.state.currentdata}</Typography>
             </Grid>
