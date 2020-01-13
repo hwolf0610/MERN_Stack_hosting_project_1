@@ -26,8 +26,8 @@ validate.validators = {
 export default class App extends Component {
   
   render() {
-    // localStorage.setItem("url", "");
-    localStorage.setItem("url", "http://localhost:3000");
+    localStorage.setItem("url", "");
+    // localStorage.setItem("url", "http://localhost:3000");
     localStorage.setItem("word1", "실적");
     localStorage.setItem("word2", "인원수");
     localStorage.setItem("word3", "실적 프로수");
